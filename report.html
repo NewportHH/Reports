@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        code {
+            font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+                monospace;
+        }
+
+        #page-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            justify-self: center;
+            display: grid;
+            gap: 20px;
+            place-content: center;
+            place-items: center;
+        }
+
+        #submit {
+            width: 200px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 20px;
+            background-color: rgba(64, 128, 201, 0.767);
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        #submit:hover {
+            background-color: rgba(110, 159, 219, 0.842);
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.603);
+            display: grid;
+            place-content: center;
+            place-items: center;
+        }
+
+        label {
+            font-size: 25px;
+            margin-right: 15px;
+        }
+
+        #download-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            place-content: center;
+            place-items: center;
+        }
+
+        #download-option {
+            width: 350px;
+            height: 280px;
+            background-color: rgba(189, 228, 166, 0.973);
+            display: grid;
+            place-content: center;
+            place-items: center;
+            border-radius: 20px;
+            gap: 50px;
+        }
+
+        #download-option a {
+            font-size: 22px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='page-container'>
+        <div style='display: flex'>
+            <label>Utilization of Hours:</label>
+            <input type="file" id="member-input" />
+        </div>
+        <div style='display: flex'>
+            <label>Member and Service Provider Visit Log:</label>
+            <input type="file" id="provider-input" />
+        </div>
+        <button id='submit' disabled>Generate reports</button>
+        <div id='download-container' style="display: none">
+            <div id='download-option'>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const memberInput = document.getElementById('member-input')
+        const providerInput = document.getElementById('provider-input')
+        const submitButton = document.getElementById('submit')
+        const downloadContainer = document.getElementById('download-container')
+        const downloadOption = document.getElementById('download-option')
+
+        const serviceCodes = [
+            {
+                service: "AET NON W UB, U1",
+                code: "T1019 UB U1"
+            },
+            {
+                service: "AET U1",
+                code: "T1019 U1"
+            },
+            {
+                service: "AETNA CFC HAB and Att. care U9, U1",
+                code: "T1019 U9 U1"
+            },
+            {
+                service: "COOKS NON W  CFC/HAB",
+                code: "T1019 U9 U1"
+            },
+            {
+                service: "COOKS NON W CFC/HAB",
+                code: "T1019 U9 U1"
+            },
+            {
+                service: "COOKS NON W  PCS",
+                code: "T1019 UB U1"
+            },
+            {
+                service: "MOL  HCBS  HAB T2017",
+                code: "T2017 U5 U7"
+            },
+            {
+                service: "MOL CFC NON W U5U7",
+                code: "S5125 U5 U7"
+            },
+            {
+                service: "MOL NURS LVN U3 UA",
+                code: "S9124 U3 UA"
+            },
+            {
+                service: "MOL PAS U5",
+                code: "S5125 U5"
+            },
+            {
+                service: "MOL RESPITE T1005 U3",
+                code: "T1005 U3"
+            },
+            {
+                service: "MOL S5125 CFC U3 U7",
+                code: "S5125 U3 U7"
+            },
+            {
+                service: "MOL WAVIER U3",
+                code: "S5125 U3"
+            },
+            {
+                service: "NON W PAS U5",
+                code: "S5125 U5"
+            },
+            {
+                service: "PAS PROTECTIVE SUP U3U1",
+                code: "S5125 U3 U1"
+            },
+            {
+                service: "Pro Sup  U3 U1",
+                code: "S5125 U3 U1"
+            },
+            {
+                service: "RESPITE T1005 U3",
+                code: "T1005 U3"
+            },
+            {
+                service: "SUP W S5125 U3",
+                code: "S5125 U3"
+            },
+            {
+                service: "SUP WAIVER CFC U3U7",
+                code: "S5125 U3 U7"
+            },
+            {
+                service: "T1005 RESPITE",
+                code: "T1005 U3"
+            },
+            {
+                service: "TMHP 7  17D  CAS",
+                code: "G0743"
+            },
+            {
+                service: "U3",
+                code: "S5125 U3"
+            },
+            {
+                service: "U3 U1",
+                code: "S5125 U3 U1"
+            },
+            {
+                service: "U3 U7",
+                code: "S5125 U3 U7"
+            },
+            {
+                service: "U5",
+                code: "S5125 U5"
+            }
+        ]
+
+        function convertToCsv(data) {
+            const headers = Object.keys(data[0])
+            const csvRows = []
+            csvRows.push(headers.join(","))
+            for (const row of data) {
+                const values = headers.map((header) => {
+                    const value = row[header]
+                    return typeof value === "string" && (value.includes(",") || value.includes('"'))
+                        ? `"${value.replace(/"/g, '""')}"`
+                        : value
+                })
+                csvRows.push(values.join(","))
+            }
+            return csvRows.join("\n")
+        }
+
+        memberInput.addEventListener('change', (e) => {
+            let reader = new FileReader()
+            reader.readAsDataURL(e.target.files[0])
+            reader.onload = () => {
+                const tableContent = atob(reader.result.split(',')[1]).split('\n').splice(4, atob(reader.result.split(',')[1]).split('\n').length - 6)
+                //console.log(tableContent)
+                const membersObject = []
+                for (let i = 0; i < tableContent.length; i++) {
+                    let authHours = tableContent[i].split(',')[10]
+                    let schedHours = tableContent[i].split(',')[8]
+                    let loggedHours = tableContent[i].split(',')[12]
+                    let currentServiceCode = serviceCodes.filter(ser => ser.service.replace(/\s/g, '') === tableContent[i].split(',')[6].replace(/\s/g, ''))[0]
+                    if (!currentServiceCode?.code) {
+                        currentServiceCode = serviceCodes.filter(ser => ser.service.replace(/\s/g, '') === `${tableContent[i].split(',')[6].replace('\"', '').replace(/\s/g, '')},${tableContent[i].split(',')[7].replace('\"', '').replace(/\s/g, '')}`)[0]
+                        authHours = tableContent[i].split(',')[11]
+                        schedHours = tableContent[i].split(',')[9]
+                        loggedHours = tableContent[i].split(',')[13]
+                    }
+                    membersObject.push({
+                        Member_Name: tableContent[i].split(',')[3].split('\"')[1] + ',' + tableContent[i].split(',')[4].split('\"')[0],
+                        Service_codes: currentServiceCode.code,
+                        Authorized: authHours,
+                        Sched: schedHours,
+                        Logged: loggedHours,
+                        Percentage_logged_per_authorized: `${((parseFloat(loggedHours) / parseFloat(authHours)) * 100).toFixed(2)}%`,
+                        Percentage_logged_per_scheduled: `${((parseFloat(loggedHours) / parseFloat(schedHours)) * 100).toFixed(2)}%`
+                    })
+                }
+                //console.log(membersObject)
+                const filteredMembers = membersObject.filter(mem => mem.Authorized !== mem.Logged)
+                //console.log(filteredMembers)
+                const memberResult = convertToCsv(filteredMembers)
+                window.sessionStorage.setItem('members', memberResult)
+            }
+            reader.onerror = (error) => {
+                console.log('Error: ', error)
+            }
+            const providersContent = window.sessionStorage.getItem('providers') || ''
+            if (providersContent) {
+                submitButton.disabled = false
+            }
+        })
+
+        providerInput.addEventListener('change', (e) => {
+            let reader = new FileReader()
+            reader.readAsDataURL(e.target.files[0])
+            reader.onload = () => {
+                const tableContent = atob(reader.result.split(',')[1]).split('\n').splice(4, atob(reader.result.split(',')[1]).split('\n').length - 6)
+                const visitsObject = []
+                for (let i = 0; i < tableContent.length; i++) {
+                    visitsObject.push({
+                        Medicaid_Number: tableContent[i].split(',')[2],
+                        MEMBER_EVV_ID: tableContent[i].split(',')[3],
+                        MEMBER_NAME: tableContent[i].split(',')[4].split('\"')[1] + ',' + tableContent[i].split(',')[5].split('\"')[0],
+                        VisitId: tableContent[i].split(',')[6],
+                        DATE: tableContent[i].split(',')[7],
+                        LOG_DATE: tableContent[i].split(',')[8],
+                        Payer: tableContent[i].split(',')[9],
+                        BILL_CODE: tableContent[i].split(',')[10],
+                        HCPCS: tableContent[i].split(',')[11],
+                        Modifiers: tableContent[i].split(',')[12],
+                        SCHEDULED_HOURS: tableContent[i].split(',')[13],
+                        SCHEDULED_IN: tableContent[i].split(',')[14],
+                        SCHEDULED_OUT: tableContent[i].split(',')[15],
+                        CALL_HOURS: tableContent[i].split(',')[16],
+                        CLOCK_IN: tableContent[i].split(',')[17],
+                        CLOCK_OUT: tableContent[i].split(',')[18],
+                        VERIFIED_HOURS: tableContent[i].split(',')[19],
+                        EVV_ID: tableContent[i].split(',')[20],
+                        SERVICE_PROVIDER: tableContent[i].split(',')[21].split('\"')[1] + ',' + tableContent[i].split(',')[22].split('\"')[0],
+                        USER_CREATED: tableContent[i].split(',')[23],
+                        VisitStatus: tableContent[i].split(',')[24]
+                    })
+                }
+                const allProviders = []
+                for (let i = 0; i < visitsObject.length; i++) {
+                    if (!allProviders.includes(visitsObject[i].SERVICE_PROVIDER)) allProviders.push(visitsObject[i].SERVICE_PROVIDER)
+                }
+                //console.log(visitsObject)
+                const providerVisitsObject = []
+                for (let i = 0; i < allProviders.length; i++) {
+                    let providerVisits = visitsObject.filter(vis => vis.SERVICE_PROVIDER === allProviders[i])
+                    let allSchedHours = 0
+                    let verifiedHours = 0
+                    for (let j = 0; j < providerVisits.length; j++) {
+                        allSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                        verifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                    }
+                    providerVisitsObject.push({
+                        provider: allProviders[i],
+                        scheduled_hours: allSchedHours.toFixed(2),
+                        verified_hours: verifiedHours.toFixed(2) || 0,
+                        Percentage_verified_per_scheduled: `${((verifiedHours.toFixed(2) / allSchedHours.toFixed(2)) * 100).toFixed(2)}%`
+                    })
+                }
+                //console.log(providerVisitsObject)
+                const providersResult = convertToCsv(providerVisitsObject)
+                window.sessionStorage.setItem('providers', providersResult)
+            }
+            reader.onerror = (error) => {
+                console.log('Error: ', error)
+            }
+            const membersContent = window.sessionStorage.getItem('members') || ''
+            if (membersContent) {
+                submitButton.disabled = false
+            }
+        })
+
+        submitButton.addEventListener('click', () => {
+            const membersContent = window.sessionStorage.getItem('members')
+            const providersContent = window.sessionStorage.getItem('providers')
+            const membersUrl = URL.createObjectURL(new Blob([membersContent], { type: 'text/csv;charset=utf-8' }))
+            const providersUrl = URL.createObjectURL(new Blob([providersContent], { type: 'text/csv;charset=utf-8' }))
+            const membersDownload = document.createElement('a')
+            membersDownload.innerHTML = 'Download members report'
+            membersDownload.href = membersUrl
+            membersDownload.download = 'members.csv'
+            const providersDownload = document.createElement('a')
+            providersDownload.innerHTML = 'Download providers report'
+            providersDownload.href = providersUrl
+            providersDownload.download = 'providers.csv'
+            downloadOption.appendChild(membersDownload)
+            downloadOption.appendChild(providersDownload)
+            downloadContainer.style.display = 'grid'
+            window.sessionStorage.removeItem('members')
+            window.sessionStorage.removeItem('providers')
+        })
+    </script>
+</body>
+
+</html>
