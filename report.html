@@ -266,10 +266,11 @@
             reader.onerror = (error) => {
                 console.log('Error: ', error)
             }
-            const providersContent = window.sessionStorage.getItem('providers') || ''
-            if (providersContent) {
-                submitButton.disabled = false
-            }
+            submitButton.disabled = false
+            // const providersContent = window.sessionStorage.getItem('providers') || ''
+            // if (providersContent) {
+            //     submitButton.disabled = false
+            // }
         })
 
         providerInput.addEventListener('change', (e) => {
@@ -311,17 +312,46 @@
                 const providerVisitsObject = []
                 for (let i = 0; i < allProviders.length; i++) {
                     let providerVisits = visitsObject.filter(vis => vis.SERVICE_PROVIDER === allProviders[i])
-                    let allSchedHours = 0
-                    let verifiedHours = 0
+                    let allPASSchedHours = 0
+                    let allSUPSchedHours = 0
+                    let allRESSchedHours = 0
+                    let allNURSchedHours = 0
+                    let verifiedPASHours = 0
+                    let verifiedSUPHours = 0
+                    let verifiedRESHours = 0
+                    let verifiedNURHours = 0
+                    const allPAScodes= ['T1019UBU1', 'T1019U1', 'T1019U9U1', 'T2017U5U7', 'S5125U5U7', 'S5125U5', 'S5125U3U7', 'S5125U3', 'G0743']
                     for (let j = 0; j < providerVisits.length; j++) {
-                        allSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
-                        verifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                        const currentServiceCode = `${providerVisits[j].BILL_CODE} ${providerVisits[j].Modifiers.replace(':', '')}`
+                        //console.log(currentServiceCode.split(':')[0])
+                        if (allPAScodes.includes(currentServiceCode.split(':')[0].replace(/\s/g, ''))) {
+                            allPASSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            verifiedPASHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                        } else if (currentServiceCode.split(':')[0] === 'S5125 U3 U1') {
+                            allSUPSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            verifiedSUPHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                        } else if (currentServiceCode.split(':')[0] === 'T1005 U3 ') {
+                            allRESSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            verifiedRESHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                        } else if (currentServiceCode.split(':')[0] === 'S9124 U3 UA') {
+                            allNURSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            verifiedNURHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                        }
                     }
                     providerVisitsObject.push({
                         provider: allProviders[i],
-                        scheduled_hours: allSchedHours.toFixed(2),
-                        verified_hours: verifiedHours.toFixed(2) || 0,
-                        Percentage_verified_per_scheduled: `${((verifiedHours.toFixed(2) / allSchedHours.toFixed(2)) * 100).toFixed(2)}%`
+                        scheduled_PAS_hours: allPASSchedHours.toFixed(2),
+                        scheduled_SUP_hours: allSUPSchedHours.toFixed(2),
+                        scheduled_RES_hours: allRESSchedHours.toFixed(2),
+                        scheduled_NUR_hours: allNURSchedHours.toFixed(2),
+                        verified_PAS_hours: verifiedPASHours.toFixed(2) || 0,
+                        verified_SUP_hours: verifiedSUPHours.toFixed(2) || 0,
+                        verified_RES_hours: verifiedRESHours.toFixed(2) || 0,
+                        verified_NUR_hours: verifiedNURHours.toFixed(2) || 0,
+                        Percentage_PAS_verified_per_scheduled: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percentage_SUP_verified_per_scheduled: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percentage_RES_verified_per_scheduled: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percentage_NUR_verified_per_scheduled: `${isNaN(((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)}%`
                     })
                 }
                 //console.log(providerVisitsObject)
@@ -331,27 +361,32 @@
             reader.onerror = (error) => {
                 console.log('Error: ', error)
             }
-            const membersContent = window.sessionStorage.getItem('members') || ''
-            if (membersContent) {
-                submitButton.disabled = false
-            }
+            submitButton.disabled = false
+            // const membersContent = window.sessionStorage.getItem('members') || ''
+            // if (membersContent) {
+            //     submitButton.disabled = false
+            // }
         })
 
         submitButton.addEventListener('click', () => {
-            const membersContent = window.sessionStorage.getItem('members')
-            const providersContent = window.sessionStorage.getItem('providers')
-            const membersUrl = URL.createObjectURL(new Blob([membersContent], { type: 'text/csv;charset=utf-8' }))
-            const providersUrl = URL.createObjectURL(new Blob([providersContent], { type: 'text/csv;charset=utf-8' }))
-            const membersDownload = document.createElement('a')
-            membersDownload.innerHTML = 'Download members report'
-            membersDownload.href = membersUrl
-            membersDownload.download = 'members.csv'
-            const providersDownload = document.createElement('a')
-            providersDownload.innerHTML = 'Download providers report'
-            providersDownload.href = providersUrl
-            providersDownload.download = 'providers.csv'
-            downloadOption.appendChild(membersDownload)
-            downloadOption.appendChild(providersDownload)
+            const membersContent = window.sessionStorage.getItem('members') || ''
+            const providersContent = window.sessionStorage.getItem('providers') || ''
+            if (membersContent) {
+                const membersUrl = URL.createObjectURL(new Blob([membersContent], { type: 'text/csv;charset=utf-8' }))
+                const membersDownload = document.createElement('a')
+                membersDownload.innerHTML = 'Download members report'
+                membersDownload.href = membersUrl
+                membersDownload.download = 'members.csv'
+                downloadOption.appendChild(membersDownload)
+            }
+            if (providersContent) {
+                const providersUrl = URL.createObjectURL(new Blob([providersContent], { type: 'text/csv;charset=utf-8' }))
+                const providersDownload = document.createElement('a')
+                providersDownload.innerHTML = 'Download providers report'
+                providersDownload.href = providersUrl
+                providersDownload.download = 'providers.csv'
+                downloadOption.appendChild(providersDownload)
+            }
             downloadContainer.style.display = 'grid'
             window.sessionStorage.removeItem('members')
             window.sessionStorage.removeItem('providers')
