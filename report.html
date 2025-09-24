@@ -339,15 +339,15 @@
                         }
                     }
                     providerVisitsObject.push({
-                        provider: allProviders[i],
-                        sched_PAS: allPASSchedHours.toFixed(2),
-                        sched_SUP: allSUPSchedHours.toFixed(2),
-                        sched_RES: allRESSchedHours.toFixed(2),
-                        sched_NUR: allNURSchedHours.toFixed(2),
-                        ver_PAS: verifiedPASHours.toFixed(2) || 0,
-                        ver_SUP: verifiedSUPHours.toFixed(2) || 0,
-                        ver_RES: verifiedRESHours.toFixed(2) || 0,
-                        ver_NUR: verifiedNURHours.toFixed(2) || 0,
+                        Provider: allProviders[i],
+                        Sched_PAS: allPASSchedHours.toFixed(2),
+                        Sched_SUP: allSUPSchedHours.toFixed(2),
+                        Sched_RES: allRESSchedHours.toFixed(2),
+                        Sched_NUR: allNURSchedHours.toFixed(2),
+                        Ver_PAS: verifiedPASHours.toFixed(2) || 0,
+                        Ver_SUP: verifiedSUPHours.toFixed(2) || 0,
+                        Ver_RES: verifiedRESHours.toFixed(2) || 0,
+                        Ver_NUR: verifiedNURHours.toFixed(2) || 0,
                         Percentage_PAS: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
                         Percentage_SUP: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
                         Percentage_RES: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
@@ -395,3 +395,4 @@
 </body>
 
 </html>
+
