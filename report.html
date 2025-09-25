@@ -267,10 +267,6 @@
                 console.log('Error: ', error)
             }
             submitButton.disabled = false
-            // const providersContent = window.sessionStorage.getItem('providers') || ''
-            // if (providersContent) {
-            //     submitButton.disabled = false
-            // }
         })
 
         providerInput.addEventListener('change', (e) => {
@@ -322,18 +318,17 @@
                     let verifiedNURHours = 0
                     const allPAScodes= ['T1019UBU1', 'T1019U1', 'T1019U9U1', 'T2017U5U7', 'S5125U5U7', 'S5125U5', 'S5125U3U7', 'S5125U3', 'G0743']
                     for (let j = 0; j < providerVisits.length; j++) {
-                        const currentServiceCode = `${providerVisits[j].BILL_CODE} ${providerVisits[j].Modifiers.replace(':', '')}`
-                        //console.log(currentServiceCode.split(':')[0])
-                        if (allPAScodes.includes(currentServiceCode.split(':')[0].replace(/\s/g, ''))) {
+                        const currentServiceCode = `${providerVisits[j].BILL_CODE} ${providerVisits[j].Modifiers.replaceAll(':', '')}`
+                        if (allPAScodes.includes(currentServiceCode.replaceAll(/\s/g, ''))) {
                             allPASSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedPASHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
-                        } else if (currentServiceCode.split(':')[0] === 'S5125 U3 U1') {
+                        } else if (currentServiceCode === 'S5125 U3 U1') {
                             allSUPSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedSUPHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
-                        } else if (currentServiceCode.split(':')[0] === 'T1005 U3 ') {
+                        } else if (currentServiceCode.replaceAll(/\s/g, '') === 'T1005U3') {
                             allRESSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedRESHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
-                        } else if (currentServiceCode.split(':')[0] === 'S9124 U3 UA') {
+                        } else if (currentServiceCode === 'S9124 U3 UA') {
                             allNURSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedNURHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         }
@@ -362,10 +357,6 @@
                 console.log('Error: ', error)
             }
             submitButton.disabled = false
-            // const membersContent = window.sessionStorage.getItem('members') || ''
-            // if (membersContent) {
-            //     submitButton.disabled = false
-            // }
         })
 
         submitButton.addEventListener('click', () => {
@@ -395,4 +386,3 @@
 </body>
 
 </html>
-
