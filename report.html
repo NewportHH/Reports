@@ -210,6 +210,22 @@
             {
                 service: "U5",
                 code: "S5125 U5"
+            },
+            {
+                service: "Waiver CFC U3 U7",
+                code: "S5125 U3 U7"
+            },
+            {
+                service: "Non WaiverU5",
+                code: "S5125 U5"
+            },
+            {
+                service: "Waiver U3",
+                code: "S5125 U3"
+            },
+            {
+                service: "TMHP FC  NON PRIORITY",
+                code: "G0743"
             }
         ]
 
@@ -233,6 +249,7 @@
             let reader = new FileReader()
             reader.readAsDataURL(e.target.files[0])
             reader.onload = () => {
+                //console.log(reader.result)
                 const tableContent = atob(reader.result.split(',')[1]).split('\n').splice(4, atob(reader.result.split(',')[1]).split('\n').length - 6)
                 //console.log(tableContent)
                 const membersObject = []
@@ -322,13 +339,13 @@
                         if (allPAScodes.includes(currentServiceCode.replaceAll(/\s/g, ''))) {
                             allPASSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedPASHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
-                        } else if (currentServiceCode === 'S5125 U3 U1') {
+                        } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S5125U3U1') {
                             allSUPSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedSUPHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'T1005U3') {
                             allRESSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedRESHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
-                        } else if (currentServiceCode === 'S9124 U3 UA') {
+                        } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S9124U3UA') {
                             allNURSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedNURHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         }
@@ -339,14 +356,14 @@
                         Sched_SUP: allSUPSchedHours.toFixed(2),
                         Sched_RES: allRESSchedHours.toFixed(2),
                         Sched_NUR: allNURSchedHours.toFixed(2),
-                        Ver_PAS: verifiedPASHours.toFixed(2) || 0,
-                        Ver_SUP: verifiedSUPHours.toFixed(2) || 0,
-                        Ver_RES: verifiedRESHours.toFixed(2) || 0,
-                        Ver_NUR: verifiedNURHours.toFixed(2) || 0,
-                        Percentage_PAS: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percentage_SUP: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percentage_RES: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percentage_NUR: `${isNaN(((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)}%`
+                        Verif_PAS: verifiedPASHours.toFixed(2) || 0,
+                        Verif_SUP: verifiedSUPHours.toFixed(2) || 0,
+                        Verif_RES: verifiedRESHours.toFixed(2) || 0,
+                        Verif_NUR: verifiedNURHours.toFixed(2) || 0,
+                        Percent_PAS: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_SUP: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_RES: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_NUR: `${isNaN(((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)}%`
                     })
                 }
                 //console.log(providerVisitsObject)
