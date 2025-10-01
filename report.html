@@ -333,21 +333,26 @@
                     let verifiedSUPHours = 0
                     let verifiedRESHours = 0
                     let verifiedNURHours = 0
+                    let allVerifiedHours = 0
                     const allPAScodes= ['T1019UBU1', 'T1019U1', 'T1019U9U1', 'T2017U5U7', 'S5125U5U7', 'S5125U5', 'S5125U3U7', 'S5125U3', 'G0743']
                     for (let j = 0; j < providerVisits.length; j++) {
                         const currentServiceCode = `${providerVisits[j].BILL_CODE} ${providerVisits[j].Modifiers.replaceAll(':', '')}`
                         if (allPAScodes.includes(currentServiceCode.replaceAll(/\s/g, ''))) {
                             allPASSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedPASHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                            allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S5125U3U1') {
                             allSUPSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedSUPHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                            allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'T1005U3') {
                             allRESSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedRESHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                            allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S9124U3UA') {
                             allNURSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedNURHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
+                            allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         }
                     }
                     providerVisitsObject.push({
@@ -360,10 +365,11 @@
                         Verif_SUP: verifiedSUPHours.toFixed(2) || 0,
                         Verif_RES: verifiedRESHours.toFixed(2) || 0,
                         Verif_NUR: verifiedNURHours.toFixed(2) || 0,
-                        Percent_PAS: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percent_SUP: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percent_RES: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
-                        Percent_NUR: `${isNaN(((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)) ? 0 : ((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)}%`
+                        Total_Hours : allVerifiedHours.toFixed(2) || 0,
+                        Percent_PAS: `${isNaN(((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)) ? '0.00' : ((verifiedPASHours.toFixed(2) / allPASSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_SUP: `${isNaN(((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)) ? '0.00' : ((verifiedSUPHours.toFixed(2) / allSUPSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_RES: `${isNaN(((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)) ? '0.00' : ((verifiedRESHours.toFixed(2) / allRESSchedHours.toFixed(2)) * 100).toFixed(2)}%`,
+                        Percent_NUR: `${isNaN(((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)) ? '0.00' : ((verifiedNURHours.toFixed(2) / allNURSchedHours.toFixed(2)) * 100).toFixed(2)}%`
                     })
                 }
                 //console.log(providerVisitsObject)
