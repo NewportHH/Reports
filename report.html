@@ -104,8 +104,37 @@
 
         .provider-element {
             display: flex;
-            margin-top: -7px;
-            margin-bottom: -7px;
+            max-height: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .provider-element p {
+            margin-top: 0px;
+        }
+
+        .close-prov {
+            margin-top: -40px;
+            margin-bottom: 0px;
+            color: red;
+            cursor: pointer;
+            font-size: 50px;
+            justify-self: right;
+        }
+
+        .send-button {
+            width: 275px;
+            height: 70px;
+            cursor: pointer;
+            place-self: center;
+            margin-top: 20px;
+            font-size: 18px;
+            border-radius: 10px;
+        }
+
+        .radio {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -133,6 +162,7 @@
         const downloadContainer = document.getElementById('download-container')
         const downloadOption = document.getElementById('download-option')
         const pageContainer = document.getElementById('page-container')
+        let providersSorted = false
 
         const serviceCodes = [
             {
@@ -361,30 +391,39 @@
                     let verifiedRESHours = 0
                     let verifiedNURHours = 0
                     let allVerifiedHours = 0
+                    let allScheduledHours = 0
                     const allPAScodes= ['T1019UBU1', 'T1019U1', 'T1019U9U1', 'T2017U5U7', 'S5125U5U7', 'S5125U5', 'S5125U3U7', 'S5125U3', 'G0743', 'G0741']
                     for (let j = 0; j < providerVisits.length; j++) {
                         const currentServiceCode = `${providerVisits[j].BILL_CODE} ${providerVisits[j].Modifiers.replaceAll(':', '')}`
                         if (allPAScodes.includes(currentServiceCode.replaceAll(/\s/g, ''))) {
                             allPASSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            allScheduledHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedPASHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                             allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S5125U3U1') {
                             allSUPSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            allScheduledHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedSUPHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                             allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'T1005U3') {
                             allRESSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            allScheduledHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedRESHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                             allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         } else if (currentServiceCode.replaceAll(/\s/g, '') === 'S9124U3UA') {
                             allNURSchedHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
+                            allScheduledHours += parseFloat(providerVisits[j].SCHEDULED_HOURS)
                             verifiedNURHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                             allVerifiedHours += parseFloat(providerVisits[j].VERIFIED_HOURS) || 0
                         }
                     }
                     if (allVerifiedHours === 0) {
-                        providersZero.push(allProviders[i].split(',').reverse().join(' '))
-                        selectedProviders.push(allProviders[i].split(',').reverse().join(' '))
+                        let providersName = allProviders[i].split(',').reverse().join(' ')
+                        providersZero.push({
+                            name: providersName,
+                            scheduled: allScheduledHours
+                        })
+                        selectedProviders.push(providersName)
                     }
                     providerVisitsObject.push({
                         Provider: allProviders[i],
@@ -406,6 +445,7 @@
                 //console.log(providerVisitsObject)
                 const providersResult = convertToCsv(providerVisitsObject)
                 window.sessionStorage.setItem('providers', providersResult)
+                window.sessionStorage.setItem('selectedProviders', selectedProviders)
             }
             reader.onerror = (error) => {
                 console.log('Error: ', error)
@@ -431,37 +471,59 @@
                 providersDownload.href = providersUrl
                 providersDownload.download = 'providers.csv'
                 downloadOption.appendChild(providersDownload)
+
                 const emptyProv = document.createElement('a')
                 emptyProv.innerHTML = 'View providers with zero hours'
                 emptyProv.classList.add('empty-providers')
                 downloadOption.appendChild(emptyProv)
                 let providerContainer = document.createElement('div')
                 providerContainer.classList.add('provider-container')
-                let closePriv = document.createElement('p')
-                closePriv.innerHTML = 'x'
-                providerContainer.appendChild(closePriv)
+                let closeProv = document.createElement('p')
+                closeProv.innerHTML = 'x'
+                closeProv.classList.add('close-prov')
+                closeProv.addEventListener('click', () => {
+                    providerContainer.style.display = 'none'
+                })
+                providerContainer.appendChild(closeProv)
                 let sendMessage = document.createElement('button')
                 sendMessage.innerHTML = 'Send message to selected providers'
+                sendMessage.classList.add('send-button')
                 pageContainer.appendChild(providerContainer)
                 emptyProv.addEventListener('click', (e) => {
                     e.preventDefault()
-                    providersZero.sort()
-                    for (let i = 0; i < providersZero.length; i++) {
-                        let providerElem = document.createElement('div')
-                        let providerText = document.createElement('p')
-                        providerText.innerHTML = providersZero[i]
-                        providerElem.classList.add('provider-element')
-                        let radialElem = document.createElement('input')
-                        radialElem.type = 'radio'
-                        radialElem.addEventListener('click', () => {
-                            selectedProviders.splice(i, 1)
-                        })
-                        providerElem.appendChild(radialElem)
-                        providerElem.appendChild(providerText)
-                        providerContainer.appendChild(providerElem)
+                    if (!providersSorted) {
+                        providersZero.sort()
+                        for (let i = 0; i < providersZero.length; i++) {
+                            let providerElem = document.createElement('div')
+                            let providerText = document.createElement('p')
+                            providerText.innerHTML = `${providersZero[i].name} (scheduled: ${providersZero[i].scheduled})`
+                            providerElem.classList.add('provider-element')
+                            let radialElem = document.createElement('input')
+                            radialElem.classList.add('radio')
+                            radialElem.type = 'radio'
+                            radialElem.checked = true
+                            radialElem.value = providersZero[i].name
+                            radialElem.addEventListener('click', (e) => {
+                                let currentSelected = window.sessionStorage.getItem('selectedProviders').split(',')
+                                if (currentSelected.includes(e.target.value)) {
+                                    let currentIndex = currentSelected.indexOf(e.target.value)
+                                    currentSelected.splice(currentIndex, 1)
+                                    window.sessionStorage.setItem('selectedProviders', currentSelected)
+                                    e.target.checked = false
+                                } else {
+                                    currentSelected.push(e.target.value)
+                                    window.sessionStorage.setItem('selectedProviders', currentSelected)
+                                    e.target.checked = true
+                                }
+                            })
+                            providerElem.appendChild(radialElem)
+                            providerElem.appendChild(providerText)
+                            providerContainer.appendChild(providerElem)
+                        }
+                        providerContainer.appendChild(sendMessage)
                     }
-                    providerContainer.appendChild(sendMessage)
                     providerContainer.style.display = 'grid'
+                    providersSorted = true
                 })
             }
             downloadContainer.style.display = 'grid'
